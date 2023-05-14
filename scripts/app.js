@@ -2,6 +2,7 @@
 
 let habbits = []
 const HABBIT_KEY = 'HABBIT_KEY'
+let globalActiveHabbitId
 
 /* page */
 const page = {
@@ -67,21 +68,22 @@ function rerenderHead(activeHabbit) {
 }
 
 function renderContent(activeHabbit) {
-    
     page.content.daysContainer.innerHTML = ''
     for (const index in activeHabbit.days) {
     const element = document.createElement('div')
     element.classList.add('habbit')
-    element.innerHTML = `<div class="habbit__day">День ${Number(index) + 1}</div>
-                     <div class="habbit__comment">${activeHabbit.days[index].comment}</div>
-                     <button class="habbit__delete">
-                    <img src="images/delete.svg" alt="Удалить день ${index + 1}"></button>`
+    element.innerHTML =
+       `<div class="habbit__day">День ${Number(index) + 1}</div>
+        <div class="habbit__comment">${activeHabbit.days[index].comment}</div>
+        <button class="habbit__delete">
+        <img src="images/delete.svg" alt="Удалить день ${index + 1}"></button>`
     page.content.daysContainer.appendChild(element)
     }
     page.content.nextDay.innerText = `День ${activeHabbit.days.length + 1}`
 }
 
 function rerender(activeHabbitId) {
+    globalActiveHabbitId = activeHabbitId
     const activeHabbit = habbits.find(habbit => habbit.id === activeHabbitId)
     if (!activeHabbit) {
         return
@@ -90,6 +92,35 @@ function rerender(activeHabbitId) {
     rerenderHead(activeHabbit)
     renderContent(activeHabbit)
     
+}
+
+/*Work width days */
+function addDay(event) {
+    console.log(event)
+    event.preventDefault()
+    const form = event.target
+    const data = new FormData(form)
+    const comment = data.get('comment')
+    form['comment'].classList.remove('error')
+
+    if(!comment) {
+        form['comment'].classList.add('error')
+        
+    } else {
+    
+    habbits = habbits.map(habbit => {
+        if (habbit.id === globalActiveHabbitId) {
+            return {
+                ...habbit,
+                days: habbit.days.concat([{ comment }])
+            }
+        }
+        return habbit 
+    })
+    form['comment'].value = ''
+    rerender(globalActiveHabbitId)
+    saveData()
+            }
 }
 
 /* init */
